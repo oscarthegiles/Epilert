@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Epilert">
+<meta name="theme-color" content="#6a4c9c">
+<title>Epilert</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Epilepsy-awareness purple: lavender for calm and identity, amber for warnings, red kept for alerts. One column, bottom tab bar. */
+  --bg:#f4f1fa;
+  --surface:#ffffff;
+  --ink:#1f1830;
+  --muted:#675f78;
+  --line:#e1d9ef;
+  --navy:#6a4c9c;
+  --navy-soft:#ece5f8;
+  --alert:#d7263d;
+  --alert-soft:#fde8eb;
+  --ok:#1d8a5f;
+  --ok-soft:#e1f4ec;
+  --warn:#a85f00;
+  --warn-soft:#fbefdc;
+  --display:"Sora","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #9b7fd4;outline-offset:2px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+
+.app{max-width:430px;height:100%;margin:0 auto;display:flex;flex-direction:column;background:var(--bg);position:relative;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.demo-strip{background:#5a3f8a;color:#efe6ff;font-size:11.5px;text-align:center;padding:calc(4px + env(safe-area-inset-top)) 12px 4px;letter-spacing:.02em}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 6px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:34px;height:34px;border-radius:10px;background:var(--navy);display:grid;place-items:center}
+.brand h1{font-size:20px;font-weight:800;color:var(--navy)}
+.brand small{display:block;font-size:12px;color:var(--muted);font-family:var(--body);font-weight:500;letter-spacing:0}
+.conn{font-size:12px;font-weight:600;color:var(--ok);background:var(--ok-soft);padding:4px 10px;border-radius:999px;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+
+main,.scroll{flex:1;overflow-y:auto;padding:10px 16px 24px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.card h2{font-size:16px}
+.label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* Home */
+.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--navy-soft);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--display);font-size:17px;color:var(--navy);font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.battery{height:6px;border-radius:3px;background:#d9cdee;overflow:hidden}
+.battery i{display:block;height:100%;background:var(--ok)}
+.band-visual{display:flex;align-items:center;gap:14px}
+.sim-btn{border:0;border-radius:20px;background:var(--alert);color:#fff;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 8px 20px rgba(215,38,61,.28)}
+.sim-btn strong{font-family:var(--display);font-size:20px}
+.sim-btn span{font-size:13px;opacity:.9}
+.sim-btn:active,.warn-btn:active{transform:scale(.98)}
+.warn-btn{border:2px solid var(--warn);background:var(--warn-soft);color:#6f3f00;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;text-align:left}
+.warn-btn strong{font-family:var(--display);font-size:16px;display:block}
+.warn-btn span{font-size:13px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--navy-soft);color:var(--navy);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.alert{background:var(--alert-soft);color:var(--alert)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.plain{background:var(--bg);color:var(--muted)}
+.link-btn{background:none;border:0;padding:0;color:var(--navy);font-weight:600;text-decoration:underline;text-underline-offset:3px;align-self:flex-start}
+
+/* Tabs */
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{background:none;border:0;padding:9px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;color:var(--muted)}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--navy)}
+
+/* Forms */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fcfbfe;width:100%}
+.field textarea{min-height:92px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:600;background:var(--navy);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:var(--navy-soft);color:var(--navy)}
+.btn.danger{background:var(--alert);color:#fff}
+.btn.danger-ghost{background:var(--alert-soft);color:var(--alert)}
+.btn.white{background:#fff;color:var(--alert)}
+.btn.block{width:100%}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--navy-soft);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:transparent;border-radius:9px;padding:8px;font-weight:600;color:var(--navy);font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 1px 3px rgba(106,76,156,.22)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.toggle small{display:block;color:var(--muted);font-size:12.5px}
+.switch{width:50px;height:30px;border-radius:15px;border:0;background:#cfc4e3;position:relative;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s}
+.switch[aria-checked="true"]{background:var(--ok)}
+.switch[aria-checked="true"]::after{left:23px}
+.saved{color:var(--ok);font-weight:600;font-size:14px}
+.pick{display:flex;flex-wrap:wrap;gap:8px}
+.pick button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:14px;font-weight:500}
+.pick button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.note{border-radius:12px;padding:10px 12px;font-size:14px}
+.note.ok{background:var(--ok-soft);color:#14583d}
+.note.alert{background:var(--alert-soft);color:#8f1426}
+.note.info{background:var(--navy-soft);color:var(--navy)}
+
+/* Privacy */
+.lock{width:46px;height:46px;border-radius:12px;background:var(--navy-soft);display:grid;place-items:center;flex:none}
+.consent{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
+.consent:first-of-type{border-top:0;padding-top:0}
+.consent input{width:20px;height:20px;margin-top:2px;accent-color:var(--navy);flex:none}
+.consent label{font-size:14px;font-weight:600}
+.consent small{display:block;color:var(--muted);font-size:12.5px;font-weight:400}
+.req{color:var(--alert);font-weight:600}
+ul.plain{margin:0;padding-left:18px;font-size:14px;display:grid;gap:4px}
+
+/* History */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.event{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.event:first-of-type{border-top:0;padding-top:0}
+.event .when{font-weight:600}
+.event .meta{display:flex;flex-wrap:wrap;gap:6px}
+.dur{font-family:var(--display);font-variant-numeric:tabular-nums;font-weight:700;color:var(--navy)}
+
+/* Alert and warning overlays */
+.overlay{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.overlay.show{display:flex}
+#alert{background:var(--alert);color:#fff;animation:flash 1s steps(1,end) infinite}
+@keyframes flash{0%{background:var(--alert)}50%{background:#8f0f22}}
+#warning{background:#955600;color:#fff;animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{0%,100%{background:#955600}50%{background:#6f3f00}}
+@media (prefers-reduced-motion:reduce){#alert,#warning{animation:none}}
+.alert-inner{flex:1;overflow-y:auto;padding:18px 16px 16px;display:flex;flex-direction:column;gap:14px}
+.alert-head{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.alert-head h2{font-size:24px;font-weight:800;line-height:1.15}
+.alert-head p{font-size:14px;opacity:.95}
+.timer-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.timer{background:rgba(0,0,0,.22);border-radius:14px;padding:10px;text-align:center}
+.timer b{display:block;font-family:var(--display);font-size:30px;font-variant-numeric:tabular-nums;line-height:1.1}
+.timer span{font-size:12px;opacity:.9}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.steps li{background:rgba(255,255,255,.14);border-radius:12px;padding:11px 12px 11px 44px;position:relative;font-size:15.5px;line-height:1.35;transition:background .2s}
+.steps li::before{content:attr(data-n);position:absolute;left:12px;top:10px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-weight:700;font-size:13px}
+.steps li.now{background:#fff;color:var(--ink);font-weight:600}
+.steps li.now::before{background:var(--alert);color:#fff}
+#warning .steps li.now::before{background:var(--warn)}
+.steps li.plan{border:2px dashed rgba(255,255,255,.6)}
+.steps li.plan.now{border-color:var(--alert)}
+.alert-actions{display:grid;gap:8px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));background:rgba(0,0,0,.25)}
+.alert-actions .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn.outline-w{background:transparent;border:2px solid #fff;color:#fff}
+.btn.white-warn{background:#fff;color:#6f3f00}
+.voice-note{font-size:12px;text-align:center;opacity:.9}
+.warn-status{background:rgba(0,0,0,.2);border-radius:12px;padding:10px 12px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* Emergency */
+#emergency,#checkin{background:var(--bg)}
+.em-head{background:linear-gradient(160deg,#7d5fb3,#5a3f8a);color:#fff;padding:16px;display:flex;flex-direction:column;gap:10px}
+.em-head h2{font-size:20px}
+.call-line{display:flex;align-items:center;gap:12px}
+.ring{width:46px;height:46px;border-radius:50%;background:var(--ok);display:grid;place-items:center;flex:none;position:relative}
+.ring.calling::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid var(--ok);animation:pulse 1.2s ease-out infinite}
+@keyframes pulse{from{opacity:1;transform:scale(.85)}to{opacity:0;transform:scale(1.3)}}
+@media (prefers-reduced-motion:reduce){.ring.calling::after{animation:none}}
+.now-instruction{background:rgba(255,255,255,.12);border-radius:12px;padding:10px 12px;font-size:14px}
+.sms{display:flex;flex-direction:column;gap:8px}
+.sms .row{padding:8px 0;border-top:1px solid var(--line)}
+.sms .row:first-child{border-top:0}
+.bubble{background:var(--navy-soft);border-radius:12px 12px 12px 4px;padding:10px 12px;font-size:13.5px}
+.map{border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px;margin:0}
+.kv dt{color:var(--muted);font-weight:600}
+.kv dd{margin:0}
+
+/* Check-in */
+.ci-head{background:var(--ok);color:#fff;padding:18px 16px;display:flex;flex-direction:column;gap:4px}
+.ci-head h2{font-size:22px}
+.big-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big-pair button{border:0;border-radius:16px;padding:18px 10px;font-family:var(--display);font-weight:700;font-size:17px}
+.big-pair .okb{background:var(--ok);color:#fff}
+.big-pair .helpb{background:var(--alert);color:#fff}
+.big-pair button[aria-pressed="false"]{opacity:.45}
+
+/* Modal */
+.modal{position:absolute;inset:0;z-index:30;background:rgba(10,20,35,.5);display:none;align-items:flex-end}
+.modal.show{display:flex}
+.sheet{background:var(--surface);width:100%;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;max-height:85%;overflow-y:auto}
+.sheet pre{white-space:pre-wrap;font-family:var(--body);font-size:13.5px;background:var(--bg);border-radius:12px;padding:12px;margin:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-strip">Student prototype · simulated bracelet · not a medical device</div>
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>
+      </div>
+      <h1>Epilert<small>Seizure alert companion</small></h1>
+    </div>
+    <div class="conn"><span class="dot"></span>Band connected</div>
+  </header>
+
+  <main id="view" tabindex="-1"></main>
+
+  <nav class="tabs" aria-label="Main">
+    <button data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+    <button data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17c.8-1.8 2-2.7 3.5-2.7s2.7.9 3.5 2.7M14 9h4M14 13h4"/></svg>Medical ID</button>
+    <button data-tab="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>History</button>
+    <button data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+  </nav>
+
+  <!-- Pre-warning screen -->
+  <section id="warning" class="overlay" role="alertdialog" aria-labelledby="warnTitle">
+    <div class="alert-inner">
+      <div class="alert-head">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5h.01"/></svg>
+        <h2 id="warnTitle"></h2>
+        <p id="warnSub"></p>
+      </div>
+      <div class="timer-row">
+        <div class="timer"><b id="warnTimer">0:00</b><span id="warnTimerLabel"></span></div>
+        <div class="timer"><b id="warnSens">High</b><span id="warnSensLabel"></span></div>
+      </div>
+      <ol class="steps" id="warnSteps"></ol>
+      <div class="warn-status"><span id="warnContactText"></span><button class="btn white-warn" data-action="warn-contacts" id="warnContactBtn"></button></div>
+      <p class="voice-note" id="warnVoiceNote"></p>
+    </div>
+    <div class="alert-actions">
+      <button class="btn white block" data-action="warn-escalate" id="warnEscalateBtn"></button>
+      <button class="btn outline-w block" data-action="warn-cancel" id="warnCancelBtn"></button>
+    </div>
+  </section>
+
+  <!-- Alert screen -->
+  <section id="alert" class="overlay" role="alertdialog" aria-labelledby="alertTitle" aria-live="assertive">
+    <div class="alert-inner">
+      <div class="alert-head">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>
+        <h2 id="alertTitle"></h2>
+        <p id="alertSub"></p>
+      </div>
+      <div class="timer-row">
+        <div class="timer"><b id="seizureTimer">0:00</b><span id="seizureTimerLabel"></span></div>
+        <div class="timer"><b id="countdown">30</b><span id="countdownLabel"></span></div>
+      </div>
+      <ol class="steps" id="steps"></ol>
+      <p class="voice-note" id="voiceNote"></p>
+    </div>
+    <div class="alert-actions">
+      <button class="btn white block" data-action="ended" id="endedBtn"></button>
+      <div class="pair">
+        <button class="btn outline-w" data-action="cancel" id="cancelBtn"></button>
+        <button class="btn white" data-action="call-now" id="callNowBtn"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Emergency call screen -->
+  <section id="emergency" class="overlay" aria-labelledby="emTitle">
+    <div class="em-head">
+      <div class="call-line">
+        <div class="ring calling" id="ring"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></div>
+        <div>
+          <h2 id="emTitle">Calling 112</h2>
+          <div id="callStatus" class="small">Dialling emergency services…</div>
+        </div>
+      </div>
+      <div class="now-instruction"><b>Seizure time <span id="emTimer">0:00</span></b> · <span id="emInstruction"></span></div>
+    </div>
+    <div class="scroll" style="padding-top:14px">
+      <div class="card">
+        <div class="row"><h2>Emergency contacts</h2><span class="chip" id="smsCount">SMS</span></div>
+        <div class="sms" id="smsList"></div>
+        <div class="bubble" id="smsText"></div>
+      </div>
+      <div class="card">
+        <div class="row"><h2>Location</h2><span class="chip ok" id="locChip">Live</span></div>
+        <div class="map" aria-hidden="true">
+          <svg viewBox="0 0 360 150" width="100%" style="display:block">
+            <rect width="360" height="150" fill="#e8eef5"/>
+            <path d="M0 95 C80 80 120 120 200 100 S320 70 360 85" stroke="#9cc3e6" stroke-width="16" fill="none"/>
+            <path d="M40 0v150M120 0v150M240 0v150M310 0v150M0 35h360M0 130h360" stroke="#fff" stroke-width="7"/>
+            <rect x="150" y="45" width="70" height="38" rx="3" fill="#d5e5d0"/>
+            <circle cx="185" cy="64" r="24" fill="rgba(215,38,61,.15)"/>
+            <path d="M185 70c-8-10-12-15-12-21a12 12 0 0 1 24 0c0 6-4 11-12 21z" fill="#d7263d"/>
+            <circle cx="185" cy="49" r="4.5" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="small"><b>Place Bellecour, 69002 Lyon</b><br><span class="muted" id="locText"></span></div>
+      </div>
+      <div class="card">
+        <div class="row"><h2>For paramedics</h2><span class="chip alert">Medical ID</span></div>
+        <dl class="kv" id="paramedicInfo"></dl>
+      </div>
+      <button class="btn block" data-action="end-emergency">Seizure over · end and log event</button>
+    </div>
+  </section>
+
+  <!-- Post-seizure check-in -->
+  <section id="checkin" class="overlay" aria-labelledby="ciTitle">
+    <div class="ci-head">
+      <h2 id="ciTitle">You had a seizure</h2>
+      <p id="ciSub" class="small"></p>
+    </div>
+    <div class="scroll" id="ciBody" style="padding-top:14px"></div>
+  </section>
+
+  <!-- Share sheet -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="sheet">
+      <div class="row"><h2 id="modalTitle">Report for your neurologist</h2><button class="btn ghost" data-action="close-modal">Close</button></div>
+      <pre id="reportText"></pre>
+      <button class="btn block" data-action="copy-report" id="copyBtn">Copy report</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- storage ---------- */
+const store = {
+  get(k, d){ try { const v = localStorage.getItem("epilert_" + k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem("epilert_" + k, JSON.stringify(v)); } catch(e){} }
+};
+
+const DEFAULT_PROFILE = {
+  name: "Camille Martin",
+  age: "24",
+  blood: "A+",
+  type: "tonic-clonic",
+  meds: "Lamotrigine 100 mg, twice a day",
+  allergies: "Penicillin",
+  contact1: "Julie Martin (mother)", phone1: "+33 6 12 34 56 78",
+  contact2: "Thomas Leroy (partner)", phone2: "+33 6 98 76 54 32",
+  carePlan: "If the seizure lasts more than 5 minutes, use the rescue medication in the red pouch of my bag. My seizures usually stop within 2 minutes.",
+  neuro: "Dr A. Bernard, neurologist, Lyon"
+};
+const EMPTY_PROFILE = { name:"", age:"", blood:"", type:"tonic-clonic", meds:"", allergies:"", contact1:"", phone1:"", contact2:"", phone2:"", carePlan:"", neuro:"" };
+const DEFAULT_SETTINGS = { lang: "en", voice: true, sensitivity: "medium", countdown: 30 };
+const DEFAULT_HISTORY = [
+  { date: "2026-11-14T22:10:00", duration: 95, location: "Home, Lyon 7e", type: "tonic-clonic", outcome: "aura" },
+  { date: "2026-11-09T14:32:00", duration: 134, location: "Lyon Part-Dieu station", type: "tonic-clonic", outcome: "call",
+    checkin: { ok: true, feeling: "Tired", triggers: ["Poor sleep", "Stress"], rescue: "No", injury: "No", notes: "Exam week, slept about 4 hours." } },
+  { date: "2026-10-27T08:05:00", duration: 62, location: "Home, Lyon 7e", type: "tonic-clonic", outcome: "bystanders",
+    checkin: { ok: true, feeling: "Headache", triggers: ["Missed medication"], rescue: "No", injury: "No", notes: "" } },
+  { date: "2026-10-12T19:40:00", duration: 18, location: "EM Lyon campus, Écully", type: "tonic-clonic", outcome: "false" }
+];
+
+let profile = Object.assign({}, DEFAULT_PROFILE, store.get("profile", {}));
+let settings = Object.assign({}, DEFAULT_SETTINGS, store.get("settings", {}));
+let history = store.get("history", DEFAULT_HISTORY);
+let consent = store.get("consent", null);
+
+const hasMedical = () => !!(consent && consent.store);
+const effType = () => hasMedical() ? profile.type : "tonic-clonic";
+
+/* ---------- text ---------- */
+const TYPE_NAMES = {
+  "tonic-clonic": { en: "Tonic-clonic (convulsive)", fr: "Tonico-clonique (convulsive)" },
+  "focal":        { en: "Focal (confusion, wandering)", fr: "Focale (confusion, errance)" },
+  "absence":      { en: "Absence (brief blank stare)", fr: "Absence (regard fixe bref)" }
+};
+
+const STEPS = {
+  "tonic-clonic": {
+    en: ["This person is having a seizure. Stay calm and stay with them.",
+         "Do not hold them down. Do not put anything in their mouth.",
+         "Move hard or sharp objects away. Put something soft under their head.",
+         "Time the seizure. Emergency services will be called automatically."],
+    fr: ["Cette personne fait une crise d'épilepsie. Restez calme et restez avec elle.",
+         "Ne la retenez pas. Ne mettez rien dans sa bouche.",
+         "Éloignez les objets durs ou coupants. Mettez quelque chose de doux sous sa tête.",
+         "Chronométrez la crise. Les secours seront appelés automatiquement."]
+  },
+  "focal": {
+    en: ["This person is having a seizure. They may seem confused. Stay with them.",
+         "Do not restrain them. Gently guide them away from danger, like roads or stairs.",
+         "Speak calmly. Do not give them anything to eat or drink.",
+         "Stay with them until they are fully aware again."],
+    fr: ["Cette personne fait une crise d'épilepsie. Elle peut sembler confuse. Restez avec elle.",
+         "Ne la retenez pas. Éloignez-la doucement des dangers, comme la route ou les escaliers.",
+         "Parlez calmement. Ne lui donnez rien à manger ni à boire.",
+         "Restez avec elle jusqu'à ce qu'elle soit pleinement consciente."]
+  },
+  "absence": {
+    en: ["This person is having a short absence seizure.",
+         "Stay with them and note the time.",
+         "No first aid is usually needed. Reassure them gently when it ends."],
+    fr: ["Cette personne fait une courte crise d'absence.",
+         "Restez avec elle et notez l'heure.",
+         "Aucun geste de secours n'est généralement nécessaire. Rassurez-la quand la crise se termine."]
+  }
+};
+
+const RECOVERY = {
+  "tonic-clonic": {
+    en: ["The shaking has stopped. Gently roll them onto their side, into the recovery position.",
+         "Check they are breathing. Stay with them until they are fully awake."],
+    fr: ["Les convulsions sont terminées. Tournez-la doucement sur le côté, en position latérale de sécurité.",
+         "Vérifiez qu'elle respire. Restez avec elle jusqu'à son réveil complet."]
+  },
+  "focal": {
+    en: ["The seizure has ended. Stay with them and speak calmly.",
+         "They may be tired or confused for a while. Do not leave them alone."],
+    fr: ["La crise est terminée. Restez avec elle et parlez calmement.",
+         "Elle peut être fatiguée ou confuse un moment. Ne la laissez pas seule."]
+  },
+  "absence": {
+    en: ["The seizure has ended. Tell them gently what happened and how long it lasted."],
+    fr: ["La crise est terminée. Expliquez-lui doucement ce qui s'est passé et combien de temps cela a duré."]
+  }
+};
+
+const WARNING_STEPS = {
+  en: ["This person feels that a seizure may be coming.",
+       "Please help them sit or lie down somewhere safe, away from roads, stairs and water.",
+       "Stay with them. If a seizure starts, this bracelet will tell you what to do."],
+  fr: ["Cette personne sent qu'une crise d'épilepsie pourrait arriver.",
+       "Aidez-la à s'asseoir ou à s'allonger dans un endroit sûr, loin de la route, des escaliers et de l'eau.",
+       "Restez avec elle. Si une crise commence, ce bracelet vous dira quoi faire."]
+};
+
+const UI = {
+  en: {
+    title: "Seizure in progress", sub: "Please help. Follow these instructions.",
+    titleAbs: "Absence seizure",
+    timerLabel: "seizure time", cdCall: "s until 112 is called", cdContacts: "s until contacts are alerted",
+    ended: "The shaking has stopped", endedOther: "The seizure has ended", awake: "They are awake · end alert",
+    cancel: "False alarm · cancel", callNow: "Call 112 now", alertNow: "Alert contacts now",
+    plan: "Doctor's care plan: ",
+    voiceOn: "Voice instructions playing. Turn the volume up.",
+    voiceOff: "Voice is off in Settings. Read the instructions aloud.",
+    noVoice: "This browser has no voice. Read the instructions aloud.",
+    warnTitle: "Seizure may be coming", warnSub: "Pre-warning from the wearer. Please stay close.",
+    warnTimer: "since the warning", warnSens: "detection sensitivity",
+    warnEscalate: "A seizure has started", warnCancel: "I feel OK now · cancel warning",
+    warnContacts: "Warn contacts", warnSent: "Contacts warned", warnNotSent: "Contacts not warned yet"
+  },
+  fr: {
+    title: "Crise en cours", sub: "Aidez-nous. Suivez ces instructions.",
+    titleAbs: "Crise d'absence",
+    timerLabel: "durée de la crise", cdCall: "s avant l'appel au 112", cdContacts: "s avant l'alerte aux proches",
+    ended: "Les convulsions ont cessé", endedOther: "La crise est terminée", awake: "Elle est réveillée · fin de l'alerte",
+    cancel: "Fausse alerte · annuler", callNow: "Appeler le 112", alertNow: "Alerter les proches",
+    plan: "Plan de soins du médecin : ",
+    voiceOn: "Instructions vocales en cours. Montez le volume.",
+    voiceOff: "La voix est désactivée dans les réglages. Lisez les instructions à voix haute.",
+    noVoice: "Ce navigateur n'a pas de voix. Lisez les instructions à voix haute.",
+    warnTitle: "Une crise pourrait arriver", warnSub: "Pré-alerte de la personne. Restez à proximité.",
+    warnTimer: "depuis la pré-alerte", warnSens: "sensibilité de détection",
+    warnEscalate: "Une crise a commencé", warnCancel: "Je vais bien · annuler",
+    warnContacts: "Prévenir les proches", warnSent: "Proches prévenus", warnNotSent: "Proches pas encore prévenus"
+  }
+};
+
+const OUTCOMES = {
+  call: { label: "112 called", cls: "alert" },
+  contacts: { label: "Contacts alerted", cls: "warn" },
+  bystanders: { label: "Handled by bystanders", cls: "ok" },
+  aura: { label: "Warning, no seizure", cls: "warn" },
+  false: { label: "False alarm", cls: "plain" }
+};
+const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
+const isSeizure = (e) => e.outcome !== "false" && e.outcome !== "aura";
+
+const FEELINGS = ["Fine", "Tired", "Confused", "Headache", "Sore or hurt"];
+const TRIGGERS = ["Missed medication", "Poor sleep", "Stress", "Alcohol", "Illness or fever", "Flashing lights", "Not sure"];
+
+/* ---------- helpers ---------- */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = (sec) => { sec = Math.max(0, Math.floor(sec)); return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); };
+const fmtDur = (sec) => sec >= 60 ? Math.floor(sec/60) + " min " + String(sec%60).padStart(2,"0") + " s" : sec + " s";
+const fmtDate = (iso) => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const planSteps = (lang) => hasMedical() && profile.carePlan && profile.carePlan.trim() ? [UI[lang].plan + profile.carePlan.trim()] : [];
+const contacts = () => hasMedical() ? [[profile.contact1, profile.phone1], [profile.contact2, profile.phone2]].filter(c => c[0]) : [];
+
+/* ---------- views ---------- */
+let currentTab = "home";
+let deleteArmed = false;
+function render(){
+  const v = $("view");
+  if (currentTab === "home") v.innerHTML = homeView();
+  if (currentTab === "profile") v.innerHTML = hasMedical() ? profileView() : privacyGate();
+  if (currentTab === "history") v.innerHTML = historyView();
+  if (currentTab === "settings") v.innerHTML = settingsView();
+  document.querySelectorAll("nav.tabs button").forEach(b => {
+    if (b.dataset.tab === currentTab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
+  v.scrollTop = 0;
+}
+
+function homeView(){
+  const last = history[0];
+  const sens = { low: "Low", medium: "Medium", high: "High" }[settings.sensitivity];
+  const instr = hasMedical()
+    ? `<div class="small">Set for <b>${esc(TYPE_NAMES[profile.type].en)}</b> seizures${profile.carePlan.trim() ? ", plus the care plan from " + esc(profile.neuro || "the doctor") : ""}.</div>
+       <button class="link-btn small" data-goto="profile">Edit medical ID</button>`
+    : `<div class="note info">Medical ID is not set up, so the band uses standard instructions for convulsive seizures and sends no medical details.</div>
+       <button class="btn ghost" data-goto="profile">Set up Medical ID</button>`;
+  return `
+  <div class="card">
+    <div class="band-visual">
+      <svg width="74" height="74" viewBox="0 0 80 80" aria-hidden="true">
+        <ellipse cx="40" cy="40" rx="34" ry="34" fill="none" stroke="#6a4c9c" stroke-width="7"/>
+        <rect x="22" y="2" width="36" height="20" rx="7" fill="#6a4c9c"/>
+        <circle cx="33" cy="12" r="4" fill="#ff5a6e"/>
+        <circle cx="47" cy="12" r="4.5" fill="#fff"/>
+      </svg>
+      <div>
+        <div class="label">Epilert band</div>
+        <h2 style="font-size:18px">Monitoring is on</h2>
+        <div class="small muted">Last sync a few seconds ago</div>
+      </div>
+    </div>
+    <div class="status-grid">
+      <div class="stat"><b>82%</b><span>Battery</span><div class="battery"><i style="width:82%"></i></div></div>
+      <div class="stat"><b>On</b><span>Detection · ${sens}</span></div>
+      <div class="stat"><b>4G</b><span>SIM signal</span></div>
+    </div>
+  </div>
+
+  <button class="sim-btn" data-action="simulate">
+    <strong>Simulate seizure</strong>
+    <span>Demo: acts as if the band detected a seizure. Turn the volume up.</span>
+  </button>
+
+  <button class="warn-btn" data-action="warn">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5h.01"/></svg>
+    <span><strong>I feel a seizure coming</strong>Pre-warning. On the band: press the button twice.</span>
+  </button>
+
+  <div class="card">
+    <div class="row"><h2>Bystander instructions</h2><span class="chip">${settings.lang === "fr" ? "Français" : "English"}</span></div>
+    ${instr}
+  </div>
+
+  ${last ? `<div class="card">
+    <div class="row"><h2>Last event</h2><span class="chip ${OUTCOMES[last.outcome].cls}">${OUTCOMES[last.outcome].label}</span></div>
+    <div class="row small"><span>${esc(fmtDate(last.date))}<br><span class="muted">${esc(last.location)}</span></span><span class="dur">${fmtDur(last.duration)}</span></div>
+  </div>` : ""}`;
+}
+
+function privacyGate(){
+  return `
+  <div class="card">
+    <div class="row" style="justify-content:flex-start">
+      <div class="lock" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6a4c9c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+      <h2 style="font-size:19px">Your medical information stays yours</h2>
+    </div>
+    <p class="small">Health data gets extra protection under the GDPR, so Epilert only stores it with your explicit consent. You can change your choices or delete everything at any time.</p>
+    <div>
+      <div class="label" style="margin-bottom:6px">What the Medical ID holds</div>
+      <ul class="plain">
+        <li>Seizure type, medication, allergies and blood type</li>
+        <li>Your doctor's care plan and your neurologist's name</li>
+        <li>Emergency contacts</li>
+        <li>Your seizure log and check-in notes</li>
+      </ul>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:6px">Where it is kept</div>
+      <p class="small">In this demo, only on this phone. Planned for the real product: encrypted on the band and the phone, with any backup on servers in the EU. Epilert never sells or shares it for advertising.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Your choices</h2>
+    <div>
+      <div class="consent"><input type="checkbox" id="c_store" checked><label for="c_store">Store my medical information <span class="req">Required</span><small>Needed for personalised first-aid instructions and the seizure log.</small></label></div>
+      <div class="consent"><input type="checkbox" id="c_paramedics" checked><label for="c_paramedics">Show my Medical ID during an alert<small>Paramedics and bystanders see it on screen only while an alert is active.</small></label></div>
+      <div class="consent"><input type="checkbox" id="c_location" checked><label for="c_location">Share my location with my contacts during an alert<small>112 always receives your location. This choice is about your contacts.</small></label></div>
+      <div class="consent"><input type="checkbox" id="c_reports"><label for="c_reports">Let me send reports to my neurologist<small>Nothing is sent unless you press Share.</small></label></div>
+    </div>
+    <button class="btn block" data-action="accept-consent" id="acceptBtn">Agree and open Medical ID</button>
+    <button class="link-btn small" data-goto="home">Not now</button>
+  </div>`;
+}
+
+function profileView(){
+  const opt = (val) => `<option value="${val}" ${profile.type === val ? "selected" : ""}>${TYPE_NAMES[val].en}</option>`;
+  const f = (id, label, type) => `<div class="field"><label for="p_${id}">${label}</label><input id="p_${id}" type="${type || "text"}" value="${esc(profile[id])}"></div>`;
+  const sw = (key, title, sub) => `<div class="toggle"><span>${title}<small>${sub}</small></span><button class="switch" role="switch" aria-checked="${!!consent[key]}" aria-label="${title}" data-consent="${key}"></button></div>`;
+  return `
+  <div class="note info small">Private: stored with your consent from ${esc(fmtDate(consent.date))}. Manage it at the bottom of this page.</div>
+  <div class="card">
+    <h2>Medical ID</h2>
+    <div class="small muted">Shown to paramedics during an alert, if you allow it. It also decides which first-aid instructions the band speaks.</div>
+    ${f("name","Full name")}
+    <div class="two">${f("age","Age","number")}${f("blood","Blood type")}</div>
+    <div class="field"><label for="p_type">Seizure type</label><select id="p_type">${opt("tonic-clonic")}${opt("focal")}${opt("absence")}</select></div>
+    ${f("meds","Medication")}
+    ${f("allergies","Allergies")}
+  </div>
+  <div class="card">
+    <h2>Emergency contacts</h2>
+    <div class="two">${f("contact1","Contact 1")}${f("phone1","Phone","tel")}</div>
+    <div class="two">${f("contact2","Contact 2")}${f("phone2","Phone","tel")}</div>
+  </div>
+  <div class="card">
+    <h2>Personal care plan from my doctor</h2>
+    <div class="small muted">Read aloud to bystanders after the standard instructions. Write it as your neurologist gave it to you.</div>
+    <div class="field"><label for="p_carePlan">Care plan</label><textarea id="p_carePlan">${esc(profile.carePlan)}</textarea></div>
+    ${f("neuro","Neurologist")}
+  </div>
+  <div class="row"><span class="saved" id="savedMsg" aria-live="polite"></span><button class="btn" data-action="save-profile">Save medical ID</button></div>
+  <div class="card">
+    <div class="row" style="justify-content:flex-start">
+      <div class="lock" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a4c9c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+      <h2>Privacy</h2>
+    </div>
+    ${sw("paramedics", "Show Medical ID during an alert", "Off: paramedics only see the seizure type.")}
+    ${sw("location", "Share location with contacts", "112 always receives your location.")}
+    ${sw("reports", "Allow neurologist reports", "Nothing is sent unless you press Share.")}
+    <button class="btn danger-ghost block" data-action="delete-data">${deleteArmed ? "Tap again to delete everything" : "Delete all my medical data"}</button>
+    <div class="small muted">Deleting removes your Medical ID, contacts, care plan and seizure log from this phone and withdraws your consent.</div>
+  </div>`;
+}
+
+function historyView(){
+  const now = new Date("2026-11-18T23:59:59");
+  const recent = history.filter(e => (now - new Date(e.date)) / 864e5 <= 30 && isSeizure(e));
+  const real = history.filter(isSeizure);
+  const avg = real.length ? Math.round(real.reduce((a, e) => a + e.duration, 0) / real.length) : 0;
+  const auras = history.filter(e => e.outcome === "aura").length;
+  const rows = history.map(e => {
+    const c = e.checkin;
+    const ci = c ? `<div class="meta">${c.feeling ? `<span class="chip plain">Felt: ${esc(c.feeling)}</span>` : ""}${(c.triggers || []).map(t => `<span class="chip plain">${esc(t)}</span>`).join("")}${c.rescue === "Yes" ? '<span class="chip warn">Rescue medication</span>' : ""}${c.injury === "Yes" ? '<span class="chip alert">Injury</span>' : ""}</div>${c.notes ? `<div class="small muted">“${esc(c.notes)}”</div>` : ""}` : "";
+    return `
+    <div class="event">
+      <div class="row"><span class="when">${esc(fmtDate(e.date))}</span><span class="dur">${fmtDur(e.duration)}</span></div>
+      <div class="small muted">${esc(e.location)}</div>
+      <div class="meta"><span class="chip">${esc(TYPE_NAMES[e.type].en.split(" (")[0])}</span><span class="chip ${OUTCOMES[e.outcome].cls}">${OUTCOMES[e.outcome].label}</span></div>
+      ${ci}
+    </div>`;
+  }).join("");
+  const canShare = consent && consent.reports;
+  return `
+  <div class="kpis">
+    <div class="stat"><b>${recent.length}</b><span>Seizures, last 30 days</span></div>
+    <div class="stat"><b>${avg ? fmtDur(avg) : "–"}</b><span>Average length</span></div>
+    <div class="stat"><b>${auras}</b><span>Warnings, no seizure</span></div>
+  </div>
+  <button class="btn block" data-action="share" ${canShare ? "" : "disabled"}>Share report with my neurologist</button>
+  ${canShare ? "" : '<div class="small muted">Turn on “Allow neurologist reports” in Medical ID › Privacy to share.</div>'}
+  <div class="card">
+    <h2>Seizure log</h2>
+    ${rows || '<div class="muted small">No events yet. Try “Simulate seizure” on the Home tab.</div>'}
+  </div>`;
+}
+
+function settingsView(){
+  const seg = (key, vals) => `<div class="seg" role="group">${vals.map(([v, l]) => `<button data-set="${key}" data-val="${v}" aria-pressed="${String(settings[key]) === String(v)}">${l}</button>`).join("")}</div>`;
+  const sensText = { low: "Fewer false alarms. May miss shorter seizures.", medium: "Balanced. Recommended for most people.", high: "Catches more seizures. More false alarms during sport." }[settings.sensitivity];
+  return `
+  <div class="card">
+    <h2>Voice instructions</h2>
+    <div class="toggle"><span>Speak instructions to bystanders</span><button class="switch" role="switch" aria-checked="${settings.voice}" aria-label="Voice instructions" data-action="toggle-voice"></button></div>
+    <div class="field"><label>Language</label>${seg("lang", [["en","English"],["fr","Français"]])}</div>
+  </div>
+  <div class="card">
+    <h2>Detection sensitivity</h2>
+    ${seg("sensitivity", [["low","Low"],["medium","Medium"],["high","High"]])}
+    <div class="small muted">${sensText} During a pre-warning, the band switches to high until you cancel.</div>
+  </div>
+  <div class="card">
+    <h2>Time to cancel a false alarm</h2>
+    ${seg("countdown", [[15,"15 s"],[30,"30 s"],[60,"60 s"]])}
+    <div class="small muted">How long bystanders or the wearer have to press “False alarm” before emergency services are called.</div>
+  </div>
+  <div class="card">
+    <h2>Demo data</h2>
+    <div class="small muted">Puts back the example profile, settings and seizure log, and asks for privacy consent again.</div>
+    <button class="btn ghost" data-action="reset">Reset demo data</button>
+  </div>`;
+}
+
+/* ---------- audio and voice ---------- */
+let audioCtx = null;
+function beep(pattern, vol){
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = audioCtx.currentTime;
+    pattern.forEach((f, i) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "square"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + i * 0.25);
+      g.gain.exponentialRampToValueAtTime(vol, t0 + i * 0.25 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.25 + 0.22);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t0 + i * 0.25); o.stop(t0 + i * 0.25 + 0.24);
+    });
+  } catch(e){}
+}
+const playAlarm = () => beep([880,660,880,660,880,660], 0.18);
+const playChime = () => beep([523,659], 0.1);
+
+const canSpeak = "speechSynthesis" in window;
+function pickVoice(lang){
+  if (!canSpeak) return null;
+  const voices = speechSynthesis.getVoices();
+  return voices.find(v => v.lang && v.lang.toLowerCase().startsWith(lang)) || null;
+}
+const speech = { token: 0, repeat: null, cycle: null };
+function stopSpeech(){
+  speech.token++; clearTimeout(speech.repeat); clearInterval(speech.cycle);
+  try { if (canSpeak) speechSynthesis.cancel(); } catch(e){}
+}
+function speakLoop(lines, onIdx, gap){
+  stopSpeech();
+  const tok = speech.token, lang = settings.lang;
+  if (settings.voice && canSpeak){
+    try {
+      const voice = pickVoice(lang);
+      lines.forEach((t, i) => {
+        const u = new SpeechSynthesisUtterance(t);
+        u.lang = lang === "fr" ? "fr-FR" : "en-GB";
+        if (voice) u.voice = voice;
+        u.rate = 0.95; u.volume = 1;
+        u.onstart = () => { if (tok === speech.token) onIdx(i); };
+        if (i === lines.length - 1) u.onend = () => { if (tok === speech.token) speech.repeat = setTimeout(() => speakLoop(lines, onIdx, gap), gap); };
+        speechSynthesis.speak(u);
+      });
+      return;
+    } catch(e){}
+  }
+  let i = 0; onIdx(0);
+  speech.cycle = setInterval(() => { if (tok !== speech.token) return; i = (i + 1) % lines.length; onIdx(i); }, 4500);
+}
+function voiceNote(){ const t = UI[settings.lang]; return !settings.voice ? t.voiceOff : (canSpeak ? t.voiceOn : t.noVoice); }
+
+/* ---------- pre-warning flow ---------- */
+let W = null;
+function startWarning(){
+  const t = UI[settings.lang];
+  W = { start: Date.now(), warned: false, current: 0, lines: WARNING_STEPS[settings.lang] };
+  $("warnTitle").textContent = t.warnTitle;
+  $("warnSub").textContent = (hasMedical() && profile.name ? profile.name + " · " : "") + t.warnSub;
+  $("warnTimerLabel").textContent = t.warnTimer;
+  $("warnSensLabel").textContent = t.warnSens;
+  $("warnSens").textContent = settings.lang === "fr" ? "Élevée" : "High";
+  $("warnEscalateBtn").textContent = t.warnEscalate;
+  $("warnCancelBtn").textContent = t.warnCancel;
+  $("warnVoiceNote").textContent = voiceNote();
+  updateWarnContacts();
+  renderWarnSteps();
+  $("warning").classList.add("show");
+  playChime();
+  W.speakStart = setTimeout(() => speakLoop(W.lines, (i) => { if (W){ W.current = i; renderWarnSteps(); } }, 6000), 900);
+  W.tick = setInterval(() => { if (W) $("warnTimer").textContent = fmt((Date.now() - W.start) / 1000); }, 250);
+}
+function renderWarnSteps(){
+  $("warnSteps").innerHTML = W.lines.map((l, i) => `<li data-n="${i + 1}" class="${i === W.current ? "now" : ""}">${esc(l)}</li>`).join("");
+}
+function updateWarnContacts(){
+  const t = UI[settings.lang], n = contacts().length;
+  const btn = $("warnContactBtn");
+  if (!n){ $("warnContactText").textContent = settings.lang === "fr" ? "Aucun proche enregistré" : "No contacts in Medical ID"; btn.style.display = "none"; return; }
+  btn.style.display = "";
+  $("warnContactText").textContent = W.warned ? t.warnSent + " (" + n + ")" : t.warnNotSent;
+  btn.textContent = W.warned ? "✓" : t.warnContacts;
+  btn.disabled = W.warned;
+}
+function endWarning(){
+  if (!W) return null;
+  clearInterval(W.tick); clearTimeout(W.speakStart); stopSpeech();
+  const w = W; W = null;
+  $("warning").classList.remove("show");
+  return w;
+}
+
+/* ---------- alert flow ---------- */
+let A = null;
+function buildSteps(){
+  const lang = settings.lang;
+  const base = (A && A.recovered ? RECOVERY : STEPS)[effType()][lang];
+  return base.concat(planSteps(lang));
+}
+function renderSteps(){
+  const lines = A.lines, base = lines.length - planSteps(settings.lang).length;
+  $("steps").innerHTML = lines.map((t, i) => `<li data-n="${i + 1}" class="${i === A.current ? "now" : ""} ${i >= base ? "plan" : ""}">${esc(t)}</li>`).join("");
+}
+function highlight(i){ if (!A) return; A.current = i; renderSteps(); $("emInstruction").textContent = A.lines[i] || ""; }
+function speakAlert(){ if (A) speakLoop(A.lines, highlight, 3500); }
+
+function startAlert(opts){
+  const lang = settings.lang, t = UI[lang], abs = effType() === "absence";
+  A = { start: Date.now(), total: settings.countdown, current: 0, recovered: false, called: false, warnedFirst: !!(opts && opts.warned) };
+  A.lines = buildSteps();
+  $("alertTitle").textContent = abs ? t.titleAbs : t.title;
+  $("alertSub").textContent = (hasMedical() && profile.name ? profile.name + " · " : "") + t.sub;
+  $("seizureTimerLabel").textContent = t.timerLabel;
+  $("countdownLabel").textContent = abs ? t.cdContacts : t.cdCall;
+  $("endedBtn").textContent = effType() === "tonic-clonic" ? t.ended : t.endedOther;
+  $("endedBtn").dataset.action = "ended";
+  $("cancelBtn").textContent = t.cancel;
+  $("callNowBtn").textContent = abs ? t.alertNow : t.callNow;
+  $("voiceNote").textContent = voiceNote();
+  renderSteps();
+  $("alert").classList.add("show");
+  playAlarm();
+  A.speakStart = setTimeout(speakAlert, 1700);
+  A.tick = setInterval(tick, 250);
+  tick();
+}
+
+function tick(){
+  if (!A) return;
+  const el = (Date.now() - A.start) / 1000;
+  $("seizureTimer").textContent = fmt(el);
+  $("emTimer").textContent = fmt(el);
+  if (!A.called){
+    const left = Math.ceil(A.total - el);
+    $("countdown").textContent = Math.max(0, left);
+    if (left <= 0) goEmergency();
+  }
+}
+
+function markRecovered(){
+  if (!A || A.recovered) return;
+  A.recovered = true; A.endedAt = Date.now();
+  A.lines = buildSteps(); A.current = 0;
+  renderSteps();
+  $("endedBtn").textContent = UI[settings.lang].awake;
+  $("endedBtn").dataset.action = "awake";
+  speakAlert();
+}
+
+function goEmergency(){
+  if (!A || A.called) return;
+  A.called = true;
+  const abs = effType() === "absence";
+  const shareLoc = !consent || consent.location !== false;
+  $("countdown").textContent = "✓";
+  $("emTitle").textContent = abs ? "Contacts alerted" : "Calling 112";
+  $("callStatus").textContent = abs ? "112 not called: absence seizures rarely need an ambulance." : "Dialling emergency services…";
+  $("ring").classList.toggle("calling", !abs);
+  $("emInstruction").textContent = A.lines[A.current] || "";
+  const cs = contacts();
+  $("smsCount").textContent = cs.length + " SMS";
+  $("smsList").innerHTML = cs.length
+    ? cs.map((c, i) => `<div class="row small"><span><b>${esc(c[0])}</b><br><span class="muted">${esc(c[1])}</span></span><span class="chip warn" id="sms${i}">Sending…</span></div>`).join("")
+    : `<div class="small muted">No emergency contacts. Add them in Medical ID.</div>`;
+  $("smsText").style.display = cs.length ? "" : "none";
+  $("smsText").textContent = `EPILERT ALERT: ${profile.name || "Your contact"} is having a seizure. ${shareLoc ? "Location: Place Bellecour, 69002 Lyon (45.7578, 4.8320). " : ""}${abs ? "Please come or call them." : "Emergency services (112) have been called."}`;
+  $("locChip").textContent = shareLoc && cs.length ? "Shared with 112 and contacts" : "Shared with 112 only";
+  $("locText").textContent = "45.7578° N, 4.8320° E · accuracy ±12 m (simulated in this demo)";
+  const showId = hasMedical() && consent.paramedics;
+  $("paramedicInfo").innerHTML = showId
+    ? [["Name", profile.name + (profile.age ? ", " + profile.age : "")],
+       ["Seizure type", TYPE_NAMES[profile.type].en],
+       ["Medication", profile.meds], ["Allergies", profile.allergies], ["Blood type", profile.blood],
+       ["Care plan", profile.carePlan], ["Neurologist", profile.neuro]
+      ].filter(r => r[1]).map(r => `<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join("")
+    : `<dt>Seizure type</dt><dd>${esc(TYPE_NAMES[effType()].en)}</dd><dt>Medical ID</dt><dd>Not shared (wearer's privacy settings)</dd>`;
+  $("emergency").classList.add("show");
+  cs.forEach((c, i) => setTimeout(() => { const s = $("sms" + i); if (s){ s.textContent = "Delivered"; s.className = "chip ok"; } }, 1400 + i * 900));
+  if (!abs){
+    setTimeout(() => { if (!A) return; A.callStart = Date.now(); $("ring").classList.remove("calling"); }, 3000);
+    A.callTick = setInterval(() => { if (A && A.callStart) $("callStatus").textContent = "Connected to SAMU · " + fmt((Date.now() - A.callStart) / 1000); }, 500);
+  }
+}
+
+function stopAlert(outcome){
+  if (!A) return;
+  const duration = Math.max(1, Math.round(((A.endedAt || Date.now()) - A.start) / 1000));
+  const ev = { date: new Date().toISOString(), duration, location: "Place Bellecour, Lyon 2e", type: effType(), outcome };
+  if (A.warnedFirst) ev.warned = true;
+  history.unshift(ev);
+  store.set("history", history);
+  clearInterval(A.tick); clearInterval(A.callTick); clearTimeout(A.speakStart);
+  stopSpeech();
+  A = null;
+  $("alert").classList.remove("show");
+  $("emergency").classList.remove("show");
+  if (outcome === "false"){ currentTab = "history"; render(); }
+  else openCheckin(ev);
+}
+
+/* ---------- post-seizure check-in ---------- */
+let CI = null;
+function openCheckin(ev){
+  CI = { ev, ok: null, feeling: null, triggers: [], rescue: null, injury: null, notes: "", tellContacts: contacts().length > 0, helpStatus: "" };
+  $("ciSub").textContent = `It lasted ${fmtDur(ev.duration)} and has been added to your log. Take your time. When you feel ready, tell us how you are.`;
+  renderCheckin();
+  $("checkin").classList.add("show");
+  $("ciBody").scrollTop = 0;
+}
+function renderCheckin(){
+  const pick = (key, vals, multi) => `<div class="pick" role="group">${vals.map(v => `<button data-ci="${key}" data-val="${esc(v)}" aria-pressed="${multi ? CI[key].includes(v) : CI[key] === v}">${esc(v)}</button>`).join("")}</div>`;
+  const first = contacts()[0];
+  const okState = CI.ok === null ? "" : (CI.ok ? "true" : "false");
+  $("ciBody").innerHTML = `
+    <div class="card">
+      <h2>Are you OK?</h2>
+      <div class="big-pair">
+        <button class="okb" data-ci-ok="yes" ${okState ? `aria-pressed="${okState === "true"}"` : ""}>I'm OK</button>
+        <button class="helpb" data-ci-ok="no" ${okState ? `aria-pressed="${okState === "false"}"` : ""}>I need help</button>
+      </div>
+      ${CI.ok === true ? `<div class="note ok">Good. A few quick questions help your neurologist see patterns.</div>` : ""}
+      ${CI.ok === false ? `<div class="note alert">${first ? `Calling ${esc(first[0])} at ${esc(first[1])}… (simulated)` : "No contact saved. Calling 112… (simulated)"}</div>` : ""}
+    </div>
+    <div class="card">
+      <h2>How do you feel?</h2>
+      ${pick("feeling", FEELINGS, false)}
+    </div>
+    <div class="card">
+      <h2>Anything that might have triggered it?</h2>
+      <div class="small muted">Pick all that apply. Over time, the log shows your neurologist what keeps coming back.</div>
+      ${pick("triggers", TRIGGERS, true)}
+    </div>
+    <div class="card">
+      <div class="row"><span><b>Did you take rescue medication?</b></span></div>
+      <div class="seg">${["Yes","No"].map(v => `<button data-ci="rescue" data-val="${v}" aria-pressed="${CI.rescue === v}">${v}</button>`).join("")}</div>
+      <div class="row"><span><b>Did you hurt yourself?</b></span></div>
+      <div class="seg">${["Yes","No"].map(v => `<button data-ci="injury" data-val="${v}" aria-pressed="${CI.injury === v}">${v}</button>`).join("")}</div>
+      <div class="field"><label for="ci_notes">Notes for your log</label><textarea id="ci_notes" placeholder="For example: slept badly, skipped breakfast">${esc(CI.notes)}</textarea></div>
+    </div>
+    ${contacts().length ? `<div class="card"><div class="toggle"><span>Tell my contacts I'm OK<small>Sends a short SMS to ${contacts().map(c => esc(c[0].split(" (")[0])).join(" and ")}.</small></span><button class="switch" role="switch" aria-checked="${CI.tellContacts}" aria-label="Tell my contacts I'm OK" data-action="ci-tell"></button></div></div>` : ""}
+    <button class="btn block" data-action="ci-save">Save to my seizure log</button>
+    <button class="btn ghost block" data-action="ci-skip">Skip for now</button>`;
+}
+function closeCheckin(save){
+  if (CI && save){
+    const notesEl = $("ci_notes");
+    CI.notes = notesEl ? notesEl.value.trim() : CI.notes;
+    CI.ev.checkin = { ok: CI.ok !== false, feeling: CI.feeling, triggers: CI.triggers.slice(), rescue: CI.rescue, injury: CI.injury, notes: CI.notes };
+    store.set("history", history);
+  }
+  CI = null;
+  $("checkin").classList.remove("show");
+  currentTab = "history"; render();
+}
+
+/* ---------- report ---------- */
+function buildReport(){
+  const real = history.filter(isSeizure);
+  const lines = history.map(e => {
+    let s = `• ${fmtDate(e.date)}: ${fmtDur(e.duration)}, ${e.location} (${OUTCOMES[e.outcome].label})`;
+    const c = e.checkin;
+    if (c){
+      const bits = [];
+      if (c.feeling) bits.push(c.feeling === "Headache" ? "had a headache" : "felt " + c.feeling.toLowerCase());
+      if (c.triggers && c.triggers.length) bits.push("possible triggers: " + c.triggers.join(", ").toLowerCase());
+      if (c.rescue === "Yes") bits.push("rescue medication taken");
+      if (c.injury === "Yes") bits.push("injury reported");
+      if (bits.length) s += "\n   " + bits.join("; ");
+      if (c.notes) s += "\n   Note: " + c.notes;
+    }
+    return s;
+  });
+  const trig = {};
+  real.forEach(e => (e.checkin && e.checkin.triggers || []).forEach(t => { if (t !== "Not sure") trig[t] = (trig[t] || 0) + 1; }));
+  const topTrig = Object.entries(trig).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${t} (${n})`).join(", ");
+  return `Epilert seizure report
+Patient: ${profile.name}${profile.age ? ", " + profile.age : ""}
+Seizure type: ${TYPE_NAMES[profile.type].en}
+Medication: ${profile.meds}
+For: ${profile.neuro}
+
+Recorded: ${plural(real.length,"seizure")}, ${plural(history.filter(e => e.outcome === "aura").length,"warning")} without a seizure, ${plural(history.filter(e => e.outcome === "false").length,"false alarm")}
+Triggers reported most: ${topTrig || "none reported"}
+
+${lines.join("\n")}`;
+}
+
+/* ---------- events ---------- */
+document.addEventListener("change", (ev) => {
+  if (ev.target.id === "c_store") $("acceptBtn").disabled = !ev.target.checked;
+});
+
+document.addEventListener("click", (ev) => {
+  const t = ev.target.closest("button");
+  if (!t) return;
+  if (t.dataset.tab){ deleteArmed = false; currentTab = t.dataset.tab; render(); return; }
+  if (t.dataset.goto){ currentTab = t.dataset.goto; render(); return; }
+  if (t.dataset.set){
+    let val = t.dataset.val; if (t.dataset.set === "countdown") val = Number(val);
+    settings[t.dataset.set] = val; store.set("settings", settings); render(); return;
+  }
+  if (t.dataset.consent){
+    consent[t.dataset.consent] = !consent[t.dataset.consent]; store.set("consent", consent);
+    t.setAttribute("aria-checked", String(consent[t.dataset.consent])); return;
+  }
+  if (t.dataset.ciOk && CI){
+    CI.notes = $("ci_notes") ? $("ci_notes").value : CI.notes;
+    CI.ok = t.dataset.ciOk === "yes"; renderCheckin(); return;
+  }
+  if (t.dataset.ci && CI){
+    CI.notes = $("ci_notes") ? $("ci_notes").value : CI.notes;
+    const k = t.dataset.ci, v = t.dataset.val;
+    if (k === "triggers"){
+      if (v === "Not sure") CI.triggers = CI.triggers.includes(v) ? [] : [v];
+      else { CI.triggers = CI.triggers.filter(x => x !== "Not sure"); CI.triggers = CI.triggers.includes(v) ? CI.triggers.filter(x => x !== v) : CI.triggers.concat(v); }
+    } else CI[k] = CI[k] === v ? null : v;
+    const y = $("ciBody").scrollTop; renderCheckin(); $("ciBody").scrollTop = y; return;
+  }
+  switch (t.dataset.action){
+    case "simulate": startAlert(); break;
+    case "warn": startWarning(); break;
+    case "warn-contacts": if (W){ W.warned = true; updateWarnContacts(); } break;
+    case "warn-escalate": { const w = endWarning(); startAlert({ warned: !!w }); break; }
+    case "warn-cancel": {
+      const w = endWarning();
+      if (w){
+        history.unshift({ date: new Date().toISOString(), duration: Math.max(1, Math.round((Date.now() - w.start) / 1000)), location: "Place Bellecour, Lyon 2e", type: effType(), outcome: "aura" });
+        store.set("history", history);
+      }
+      currentTab = "home"; render(); break;
+    }
+    case "ended": markRecovered(); break;
+    case "awake": stopAlert("bystanders"); break;
+    case "cancel": stopAlert("false"); break;
+    case "call-now": goEmergency(); break;
+    case "end-emergency": stopAlert(effType() === "absence" ? "contacts" : "call"); break;
+    case "ci-tell": if (CI){ CI.tellContacts = !CI.tellContacts; t.setAttribute("aria-checked", String(CI.tellContacts)); } break;
+    case "ci-save": closeCheckin(true); break;
+    case "ci-skip": closeCheckin(false); break;
+    case "toggle-voice": settings.voice = !settings.voice; store.set("settings", settings); render(); break;
+    case "accept-consent": {
+      consent = { store: true, paramedics: $("c_paramedics").checked, location: $("c_location").checked, reports: $("c_reports").checked, date: new Date().toISOString() };
+      store.set("consent", consent); render(); break;
+    }
+    case "save-profile": {
+      ["name","age","blood","type","meds","allergies","contact1","phone1","contact2","phone2","carePlan","neuro"].forEach(k => { const el = $("p_" + k); if (el) profile[k] = el.value; });
+      store.set("profile", profile);
+      $("savedMsg").textContent = "Saved. Instructions updated.";
+      break;
+    }
+    case "delete-data": {
+      if (!deleteArmed){ deleteArmed = true; t.textContent = "Tap again to delete everything"; break; }
+      deleteArmed = false;
+      profile = Object.assign({}, EMPTY_PROFILE); history = []; consent = null;
+      store.set("profile", profile); store.set("history", history); store.set("consent", null);
+      currentTab = "home"; render(); break;
+    }
+    case "share": $("reportText").textContent = buildReport(); $("copyBtn").textContent = "Copy report"; $("modal").classList.add("show"); break;
+    case "close-modal": $("modal").classList.remove("show"); break;
+    case "copy-report": {
+      const txt = $("reportText").textContent;
+      Promise.resolve().then(() => navigator.clipboard.writeText(txt))
+        .then(() => { $("copyBtn").textContent = "Copied"; })
+        .catch(() => { $("copyBtn").textContent = "Copy blocked: select the text instead"; });
+      break;
+    }
+    case "reset":
+      profile = Object.assign({}, DEFAULT_PROFILE); settings = Object.assign({}, DEFAULT_SETTINGS); history = DEFAULT_HISTORY.map(e => JSON.parse(JSON.stringify(e))); consent = null;
+      store.set("profile", profile); store.set("settings", settings); store.set("history", history); store.set("consent", null);
+      render(); break;
+  }
+});
+
+if (canSpeak){ try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; } catch(e){} }
+render();
+})();
+if ("serviceWorker" in navigator && location.protocol === "https:") { navigator.serviceWorker.register("sw.js").catch(() => {}); }
+</script>
+</body>
+</html>
